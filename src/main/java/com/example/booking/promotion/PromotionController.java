@@ -58,6 +58,19 @@ public class PromotionController {
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
+    @GetMapping("/discount-codes")
+    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Get all discount codes", description = "Retrieve all created discount codes. Admin only.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Discount codes retrieved", content = @Content(schema = @Schema(implementation = DiscountCode.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required")
+    })
+    public ResponseEntity<java.util.List<DiscountCode>> getAllDiscountCodes() {
+        return ResponseEntity.ok(promotionService.getAllDiscountCodes());
+    }
+
     @PostMapping("/validate-code")
     @Operation(summary = "Validate discount code", description = "Validate if a discount code is active and applicable for the given amount")
     @ApiResponses(value = {

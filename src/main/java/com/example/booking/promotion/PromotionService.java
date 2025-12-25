@@ -115,4 +115,9 @@ public class PromotionService {
                         .availablePoints(0)
                         .build());
     }
+
+    @Transactional(readOnly = true)
+    public java.util.List<DiscountCode> getAllDiscountCodes() {
+        return discountCodeRepository.findAll();
+    }
 }
