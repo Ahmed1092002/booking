@@ -72,4 +72,21 @@ public class BookingController {
 
         return ResponseEntity.ok(dtos);
     }
+
+    @PostMapping("/{bookingId}/cancel")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Cancel booking", description = "Cancel an existing booking. Only the user who made the booking can cancel it.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Booking cancelled successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request - Booking already cancelled or cannot be cancelled"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - User does not own the booking"),
+            @ApiResponse(responseCode = "404", description = "Booking not found")
+    })
+    public ResponseEntity<Void> cancelBooking(
+            @io.swagger.v3.oas.annotations.Parameter(description = "Booking ID") @PathVariable Long bookingId) {
+        User booker = currentUserService.getCurrentUser();
+        bookingService.cancelBooking(booker.getId(), bookingId);
+        return ResponseEntity.noContent().build();
+    }
 }

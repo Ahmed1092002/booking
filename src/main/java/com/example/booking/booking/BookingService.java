@@ -1,5 +1,8 @@
 package com.example.booking.booking;
 
+import com.example.booking.exception.BadRequestException;
+import com.example.booking.exception.ForbiddenException;
+import com.example.booking.exception.ResourceNotFoundException;
 import com.example.booking.hotel.Room;
 import com.example.booking.hotel.RoomRepository;
 import com.example.booking.user.User;
@@ -28,12 +31,12 @@ public class BookingService {
     @Transactional
     public Booking createBooking(Long bookerId, Long roomId, java.time.LocalDate checkInDate,
             java.time.LocalDate checkOutDate) {
-        // 1. Validate Room existence
+        // 1. Validate Room existencia
         Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("Room not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
 
         if (!room.isAvailable()) {
-            throw new RuntimeException("Room is strictly unavailable (closed)");
+            throw new BadRequestException("Room is strictly unavailable (closed)");
         }
 
         // 2. Concurrency Check: Check for overlapping bookings
@@ -43,17 +46,17 @@ public class BookingService {
                 checkOutDate);
 
         if (!overlaps.isEmpty()) {
-            throw new RuntimeException("Room is already booked for these dates!");
+            throw new BadRequestException("Room is already booked for these dates!");
         }
 
         // 3. User validation
         User booker = userRepository.findById(bookerId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         // 4. Calculate Price
         long days = ChronoUnit.DAYS.between(checkInDate, checkOutDate);
         if (days < 1)
-            throw new RuntimeException("Booking must be at least 1 night");
+            throw new BadRequestException("Booking must be at least 1 night");
 
         BigDecimal totalPrice = room.getPricePerNight().multiply(BigDecimal.valueOf(days));
 
@@ -75,5 +78,30 @@ public class BookingService {
 
     public List<Booking> getBookingsForUser(Long userId) {
         return bookingRepository.findByBookerId(userId);
+    }
+
+    @Transactional
+    public void cancelBooking(Long userId, Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+
+        if (!booking.getBooker().getId().equals(userId)) {
+            throw new ForbiddenException("You are not authorized to cancel this booking");
+        }
+
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            throw new BadRequestException("Booking is already cancelled");
+        }
+
+        if (booking.getStatus() == BookingStatus.COMPLETED) {
+            throw new BadRequestException("Cannot cancel a completed booking");
+        }
+
+        // Logic to check connection/time constraints could be added here
+        // e.g., cannot cancel if check-in is today
+
+        booking.setStatus(BookingStatus.CANCELLED);
+        booking.setCancelledAt(java.time.LocalDateTime.now());
+        bookingRepository.save(booking);
     }
 }
