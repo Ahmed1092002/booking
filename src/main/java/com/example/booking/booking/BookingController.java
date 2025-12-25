@@ -4,6 +4,13 @@ import com.example.booking.booking.dto.BookingResponseDto;
 import com.example.booking.booking.dto.CreateBookingRequest;
 import com.example.booking.security.CurrentUserService;
 import com.example.booking.user.User;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +21,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/bookings")
+@Tag(name = "Bookings", description = "Hotel room booking management endpoints")
+@SecurityRequirement(name = "bearerAuth")
 public class BookingController {
 
     private final BookingService bookingService;
@@ -29,6 +38,13 @@ public class BookingController {
 
     @PostMapping
     @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Create new booking", description = "Book a hotel room for specified check-in and check-out dates. Validates room availability and calculates total price.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Booking created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BookingResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid request - Room not available or invalid dates"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - Authentication required"),
+            @ApiResponse(responseCode = "404", description = "Room not found")
+    })
     public ResponseEntity<BookingResponseDto> createBooking(@Valid @RequestBody CreateBookingRequest request) {
         User booker = currentUserService.getCurrentUser();
         Booking booking = bookingService.createBooking(
@@ -42,6 +58,11 @@ public class BookingController {
 
     @GetMapping("/my-bookings")
     @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Get my bookings", description = "Retrieve all bookings made by the authenticated user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Bookings retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BookingResponseDto.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - Authentication required")
+    })
     public ResponseEntity<List<BookingResponseDto>> getMyBookings() {
         User booker = currentUserService.getCurrentUser();
         List<Booking> bookings = bookingService.getBookingsByBooker(booker.getId());
