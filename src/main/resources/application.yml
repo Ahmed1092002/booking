@@ -34,7 +34,7 @@ org:
       enabled: true
     dashboard:
       enabled: true
-      port: 8000 # Access dashboard at http://localhost:8000
+      # Port removed to run inside main Tomcat server on port 8080
     jobs:
       default-number-of-retries: 3
     database:
