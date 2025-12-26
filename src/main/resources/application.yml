@@ -29,8 +29,6 @@ spring:
       # For standard host/port config:
       host: ${SPRING_REDIS_HOST:localhost}
       port: ${SPRING_REDIS_PORT:6379}
-      # If using REDIS_URL (common in cloud), Spring Boot 3.x supports 'spring.data.redis.url'
-      url: ${REDIS_URL:}
 
 org:
   jobrunr:
