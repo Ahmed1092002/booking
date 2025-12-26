@@ -3,9 +3,7 @@ services:
     name: booking-api
     env: docker
     plan: free
-    buildCommand: docker build -t booking-api .
-    startCommand: ./mvnw spring-boot:run # Not used for Docker env, but good fallback
-    envVars:
+
       - key: SPRING_PROFILES_ACTIVE
         value: prod
       - key: DB_USERNAME
