@@ -14,23 +14,23 @@ import java.time.Duration;
 @EnableCaching
 public class CacheConfig {
 
-    @Bean
-    public RedisCacheConfiguration cacheConfiguration() {
-        return RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(60)) // Default: 60 minutes
-                .disableCachingNullValues()
-                .serializeValuesWith(RedisSerializationContext.SerializationPair
-                        .fromSerializer(new GenericJackson2JsonRedisSerializer()));
-    }
+        @Bean
+        public RedisCacheConfiguration cacheConfiguration() {
+                return RedisCacheConfiguration.defaultCacheConfig()
+                                .entryTtl(Duration.ofMinutes(60)) // Default: 60 minutes
+                                .disableCachingNullValues()
+                                .serializeValuesWith(RedisSerializationContext.SerializationPair
+                                                .fromSerializer(new GenericJackson2JsonRedisSerializer()));
+        }
 
-    @Bean
-    public RedisCacheManagerBuilderCustomizer redisCacheManagerBuilderCustomizer() {
-        return (builder) -> builder
-                .withCacheConfiguration("hotelsByCity",
-                        RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(60))) // Specific: 10
-                                                                                                       // mins
-                .withCacheConfiguration("roomAvailability",
-                        RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(60))); // Specific: 1
-                                                                                                       // min
-    }
+        @Bean
+        public RedisCacheManagerBuilderCustomizer redisCacheManagerBuilderCustomizer() {
+                return (builder) -> builder
+                                .withCacheConfiguration("hotelsByCity",
+                                                RedisCacheConfiguration.defaultCacheConfig()
+                                                                .entryTtl(Duration.ofMinutes(60)))
+                                .withCacheConfiguration("roomAvailability",
+                                                RedisCacheConfiguration.defaultCacheConfig()
+                                                                .entryTtl(Duration.ofMinutes(60)));
+        }
 }

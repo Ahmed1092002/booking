@@ -20,20 +20,11 @@ services:
           property: connectionString
       - key: CLOUDINARY_CLOUD_NAME
         sync: false
+
       - key: CLOUDINARY_API_KEY
         sync: false
       - key: CLOUDINARY_API_SECRET
         sync: false
-      - key: SPRING_DATA_REDIS_URL
-        fromService:
-          type: redis
-          name: booking-redis
-          property: connectionString
-
-  - type: redis
-    name: booking-redis
-    plan: free
-    ipAllowList: [] # Allow internal access only
 
 databases:
   - name: booking-db

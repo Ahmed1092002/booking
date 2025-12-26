@@ -22,13 +22,11 @@ spring:
     baseline-on-migrate: true
     locations: classpath:db/migration
 
-  # Redis Configuration
+  # Caching Configuration (Redis - Sidecar)
   data:
     redis:
-      # Render provides REDIS_URL, Spring Boot can auto-configure if we set this property (or parse it manually)
-      # For standard host/port config:
-      host: ${SPRING_REDIS_HOST:localhost}
-      port: ${SPRING_REDIS_PORT:6379}
+      host: localhost
+      port: 6379
 
 org:
   jobrunr:

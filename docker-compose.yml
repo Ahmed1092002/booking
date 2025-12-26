@@ -1,22 +1,4 @@
 services:
-  # Redis Cache Service
-  redis:
-    image: redis:7-alpine
-    container_name: booking-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data
-    command: redis-server --appendonly yes
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-    networks:
-      - booking-network
-
   # PostgreSQL Database Service
   postgres:
     image: postgres:15-alpine
@@ -39,8 +21,6 @@ services:
       - booking-network
 
 volumes:
-  redis-data:
-    driver: local
   postgres-data:
     driver: local
 
