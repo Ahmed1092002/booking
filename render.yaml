@@ -32,13 +32,13 @@ services:
           name: booking-redis
           property: connectionString
 
+  - type: redis
+    name: booking-redis
+    plan: free
+    ipAllowList: [] # Allow internal access only
+
 databases:
   - name: booking-db
     plan: free
     databaseName: booking
     user: booking_user
-
-  - type: redis
-    name: booking-redis
-    plan: free
-    ipAllowList: [] # Allow internal access only
