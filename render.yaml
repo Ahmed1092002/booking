@@ -1,0 +1,44 @@
+services:
+  - type: web
+    name: booking-api
+    env: docker
+    plan: free
+    buildCommand: docker build -t booking-api .
+    startCommand: ./mvnw spring-boot:run # Not used for Docker env, but good fallback
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DB_USERNAME
+        fromDatabase:
+          name: booking-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: booking-db
+          property: password
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: booking-db
+          property: connectionString
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: booking-redis
+          property: connectionString
+
+databases:
+  - name: booking-db
+    plan: free
+    databaseName: booking
+    user: booking_user
+
+  - type: redis
+    name: booking-redis
+    plan: free
+    ipAllowList: [] # Allow internal access only

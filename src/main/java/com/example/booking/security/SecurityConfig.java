@@ -38,9 +38,29 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http.csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests((authorize) -> authorize.requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/h2-console/**").permitAll() // Allow H2 Console
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                .authorizeHttpRequests((authorize) -> authorize
+                        // Authentication endpoints
+                        .requestMatchers("/api/auth/**").permitAll()
+
+                        // Public hotel browsing endpoints (GET only)
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/hotels/**").permitAll()
+
+                        // Check availability or Advanced Search (POST)
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/hotels/search/**").permitAll()
+
+                        // Public review reading endpoints (GET only)
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/reviews/**").permitAll()
+
+                        // Public image viewing endpoints (GET only)
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/images/**").permitAll()
+
+                        // Development tools
+                        .requestMatchers("/h2-console/**").permitAll()
+
+                        // API Documentation
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+
+                        // All other requests require authentication
                         .anyRequest().authenticated())
                 // H2 Console uses frames
                 .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
