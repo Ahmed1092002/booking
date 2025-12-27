@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,4 +25,5 @@ public class HotelSearchResponse {
     private BigDecimal minRoomPrice;
     private Integer availableRooms;
     private List<RoomResponseDto> rooms;
+    private List<com.example.booking.image.dto.ImageResponseDto> images;
 }

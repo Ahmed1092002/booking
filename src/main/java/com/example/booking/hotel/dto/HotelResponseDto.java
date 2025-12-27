@@ -18,4 +18,5 @@ public class HotelResponseDto {
     private Set<String> amenities;
     private Long sellerId;
     private String sellerName;
+    private java.util.List<com.example.booking.image.dto.ImageResponseDto> images;
 }

@@ -19,4 +19,5 @@ public class RoomResponseDto {
     private Boolean isAvailable;
     private Long hotelId;
     private String hotelName;
+    private java.util.List<com.example.booking.image.dto.ImageResponseDto> images;
 }

@@ -49,4 +49,7 @@ public class Hotel {
 
     @Column(name = "total_reviews")
     private Integer totalReviews = 0;
+
+    @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<com.example.booking.image.HotelImage> images;
 }

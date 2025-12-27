@@ -61,6 +61,19 @@ public class HotelSearchService {
         response.setAverageRating(hotel.getAverageRating());
         response.setTotalReviews(hotel.getTotalReviews());
 
+        // Set Images
+        if (hotel.getImages() != null) {
+            response.setImages(hotel.getImages().stream()
+                    .sorted(java.util.Comparator.comparingInt(com.example.booking.image.HotelImage::getDisplayOrder))
+                    .map(img -> new com.example.booking.image.dto.ImageResponseDto(
+                            img.getId(),
+                            img.getImageUrl(),
+                            img.getIsPrimary(),
+                            img.getDisplayOrder(),
+                            img.getUploadedAt()))
+                    .collect(Collectors.toList()));
+        }
+
         // Get rooms for this hotel
         List<Room> rooms = roomRepository.findByHotelId(hotel.getId());
 

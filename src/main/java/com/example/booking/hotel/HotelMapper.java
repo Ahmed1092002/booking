@@ -41,6 +41,19 @@ public class HotelMapper {
         dto.setAmenities(hotel.getAmenities());
         dto.setSellerId(hotel.getSeller().getId());
         dto.setSellerName(hotel.getSeller().getFullName());
+
+        if (hotel.getImages() != null) {
+            dto.setImages(hotel.getImages().stream()
+                    .sorted(java.util.Comparator.comparingInt(com.example.booking.image.HotelImage::getDisplayOrder))
+                    .map(img -> new com.example.booking.image.dto.ImageResponseDto(
+                            img.getId(),
+                            img.getImageUrl(),
+                            img.getIsPrimary(),
+                            img.getDisplayOrder(),
+                            img.getUploadedAt()))
+                    .collect(java.util.stream.Collectors.toList()));
+        }
+
         return dto;
     }
 
@@ -75,6 +88,19 @@ public class HotelMapper {
         dto.setIsAvailable(room.isAvailable());
         dto.setHotelId(room.getHotel().getId());
         dto.setHotelName(room.getHotel().getName());
+
+        if (room.getImages() != null) {
+            dto.setImages(room.getImages().stream()
+                    .sorted(java.util.Comparator.comparingInt(com.example.booking.image.RoomImage::getDisplayOrder))
+                    .map(img -> new com.example.booking.image.dto.ImageResponseDto(
+                            img.getId(),
+                            img.getImageUrl(),
+                            img.getIsPrimary(),
+                            img.getDisplayOrder(),
+                            img.getUploadedAt()))
+                    .collect(java.util.stream.Collectors.toList()));
+        }
+
         return dto;
     }
 }
