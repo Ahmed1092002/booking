@@ -24,6 +24,9 @@ public class DiscountCode {
     @Column(unique = true, nullable = false)
     private String code;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private DiscountType type; // PERCENTAGE, FIXED_AMOUNT

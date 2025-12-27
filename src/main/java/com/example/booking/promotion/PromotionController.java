@@ -44,6 +44,7 @@ public class PromotionController {
     public ResponseEntity<DiscountCode> createDiscountCode(@Valid @RequestBody CreateDiscountCodeRequest request) {
         DiscountCode discountCode = DiscountCode.builder()
                 .code(request.getCode().toUpperCase())
+                .description(request.getDescription())
                 .type(request.getType())
                 .discountValue(request.getValue())
                 .validFrom(request.getValidFrom())
@@ -58,17 +59,54 @@ public class PromotionController {
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
+    @GetMapping("/discount-codes/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Get discount code by ID", description = "Retrieve a single discount code. Admin only.")
+    public ResponseEntity<DiscountCode> getDiscountCode(@PathVariable Long id) {
+        return ResponseEntity.ok(promotionService.getDiscountCodeById(id));
+    }
+
+    @PutMapping("/discount-codes/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Update discount code", description = "Update an existing discount code. Admin only.")
+    public ResponseEntity<DiscountCode> updateDiscountCode(
+            @PathVariable Long id,
+            @Valid @RequestBody com.example.booking.promotion.dto.UpdateDiscountCodeRequest request) {
+        return ResponseEntity.ok(promotionService.updateDiscountCode(id, request));
+    }
+
+    @DeleteMapping("/discount-codes/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Delete discount code", description = "Delete a discount code. Admin only.")
+    public ResponseEntity<Void> deleteDiscountCode(@PathVariable Long id) {
+        promotionService.deleteDiscountCode(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/discount-codes/{id}/status")
+    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Toggle status", description = "Toggle discount code active/inactive status")
+    public ResponseEntity<DiscountCode> toggleStatus(@PathVariable Long id) {
+        return ResponseEntity.ok(promotionService.toggleDiscountCodeStatus(id));
+    }
+
     @GetMapping("/discount-codes")
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Get all discount codes", description = "Retrieve all created discount codes. Admin only.")
+    @Operation(summary = "Get all discount codes", description = "Retrieve all created discount codes with optional filtering. Admin only.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Discount codes retrieved", content = @Content(schema = @Schema(implementation = DiscountCode.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required")
     })
-    public ResponseEntity<java.util.List<DiscountCode>> getAllDiscountCodes() {
-        return ResponseEntity.ok(promotionService.getAllDiscountCodes());
+    public ResponseEntity<java.util.List<DiscountCode>> getAllDiscountCodes(
+            @Parameter(description = "Search by code") @RequestParam(required = false) String search,
+            @Parameter(description = "Filter by active status") @RequestParam(required = false) Boolean active) {
+        return ResponseEntity.ok(promotionService.getAllDiscountCodes(search, active));
     }
 
     @PostMapping("/validate-code")

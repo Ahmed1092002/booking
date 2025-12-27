@@ -117,7 +117,61 @@ public class PromotionService {
     }
 
     @Transactional(readOnly = true)
-    public java.util.List<DiscountCode> getAllDiscountCodes() {
-        return discountCodeRepository.findAll();
+    public java.util.List<DiscountCode> getAllDiscountCodes(String search, Boolean active) {
+        if (search == null && active == null) {
+            return discountCodeRepository.findAll();
+        }
+        return discountCodeRepository.searchDiscountCodes(search, active);
+    }
+
+    @Transactional(readOnly = true)
+    public DiscountCode getDiscountCodeById(Long id) {
+        return discountCodeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Discount code not found"));
+    }
+
+    @Transactional
+    public DiscountCode updateDiscountCode(Long id,
+            com.example.booking.promotion.dto.UpdateDiscountCodeRequest request) {
+        DiscountCode discount = getDiscountCodeById(id);
+
+        if (request.getCode() != null && !request.getCode().equals(discount.getCode())) {
+            if (discountCodeRepository.existsByCode(request.getCode())) {
+                throw new BadRequestException("Discount code code already exists");
+            }
+            discount.setCode(request.getCode().toUpperCase());
+        }
+
+        if (request.getDescription() != null)
+            discount.setDescription(request.getDescription());
+        if (request.getType() != null)
+            discount.setType(request.getType());
+        if (request.getValue() != null)
+            discount.setDiscountValue(request.getValue());
+        if (request.getValidFrom() != null)
+            discount.setValidFrom(request.getValidFrom());
+        if (request.getValidUntil() != null)
+            discount.setValidUntil(request.getValidUntil());
+        if (request.getMaxUses() != null)
+            discount.setMaxUses(request.getMaxUses());
+        if (request.getMinBookingAmount() != null)
+            discount.setMinBookingAmount(request.getMinBookingAmount());
+        if (request.getActive() != null)
+            discount.setActive(request.getActive());
+
+        return discountCodeRepository.save(discount);
+    }
+
+    @Transactional
+    public void deleteDiscountCode(Long id) {
+        DiscountCode discount = getDiscountCodeById(id);
+        discountCodeRepository.delete(discount);
+    }
+
+    @Transactional
+    public DiscountCode toggleDiscountCodeStatus(Long id) {
+        DiscountCode discount = getDiscountCodeById(id);
+        discount.setActive(!discount.getActive());
+        return discountCodeRepository.save(discount);
     }
 }

@@ -278,6 +278,9 @@ Response: { token, type: "Bearer", email, roles }
 // Get all hotels
 GET /api/hotels
 
+// Get Single Hotel
+GET /api/hotels/{id}
+
 // Search by city
 GET /api/hotels/search?city=New York
 
@@ -299,6 +302,38 @@ Body: {
 POST /api/hotels
 Headers: { Authorization: "Bearer <token>" }
 Body: { name, city, address, googleMapUrl, amenities: [] }
+
+// Update Hotel (SELLER)
+PUT /api/hotels/{id}
+Headers: { Authorization: "Bearer <token>" }
+Body: {
+  name: "Updated Name",
+  city: "Updated City",
+  address: "Updated Address",
+  googleMapUrl: "https://maps.google.com/...",
+  amenities: ["Pool", "Gym"]
+}
+Note: Partial updates supported. Server only updates fields that are not null.
+
+// Delete Hotel (SELLER)
+DELETE /api/hotels/{id}
+Headers: { Authorization: "Bearer <token>" }
+Note: Implements "Safe Delete". Request will fail with 400/500 if the hotel has any existing bookings to protect data integrity.
+
+// Get My Hotels (SELLER)
+GET /api/hotels/seller/my-hotels
+Headers: { Authorization: "Bearer <token>" }
+
+// Get Seller Stats (SELLER)
+GET /api/hotels/seller/stats
+Headers: { Authorization: "Bearer <token>" }
+Response: {
+  totalHotels: 5,
+  totalBookings: 120,
+  totalRevenue: 50000.00,
+  averageRating: 4.8,
+  totalReviews: 45
+}
 
 // Add room (SELLER)
 POST /api/hotels/{hotelId}/rooms
@@ -401,17 +436,57 @@ Body: {
 }
 ```
 
-#### Promotions
+#### Promotions & Discounts
 
 ```javascript
-// Validate discount code
+// 1. Validate discount code (Public/Customer)
 POST /api/promotions/validate-code?code=SUMMER2025&amount=150.00
+Response: { code, type, discountValue, ... }
 
-// Get loyalty points
+// 2. Get all discount codes (ADMIN)
+GET /api/promotions/discount-codes?search=SUMMER&active=true
+Headers: { Authorization: "Bearer <token>" }
+Query Params:
+  - search: (string) optional search by code
+  - active: (boolean) optional filter by status
+
+// 3. Create discount code (ADMIN)
+POST /api/promotions/discount-codes
+Headers: { Authorization: "Bearer <token>" }
+Body: {
+  code: "WELCOME2025",
+  description: "Welcome discount for new users",
+  type: "PERCENTAGE", // or "FIXED_AMOUNT", "FIXED"
+  value: 10.0,
+  validFrom: "2025-01-01",
+  validUntil: "2025-12-31",
+  maxUses: 100,
+  minBookingAmount: 50.0
+}
+
+// 4. Update discount code (ADMIN)
+PUT /api/promotions/discount-codes/{id}
+Headers: { Authorization: "Bearer <token>" }
+Body: {
+  description: "Updated description",
+  maxUses: 200,
+  active: false
+  // All fields from Create are optional here
+}
+
+// 5. Toggle inactive/active (ADMIN)
+PATCH /api/promotions/discount-codes/{id}/status
+Headers: { Authorization: "Bearer <token>" }
+
+// 6. Delete discount code (ADMIN)
+DELETE /api/promotions/discount-codes/{id}
+Headers: { Authorization: "Bearer <token>" }
+
+// 7. Get my loyalty points (Customer)
 GET /api/promotions/loyalty-points
 Headers: { Authorization: "Bearer <token>" }
 
-// Redeem points
+// 8. Redeem points (Customer)
 POST /api/promotions/loyalty-points/redeem?points=100
 Headers: { Authorization: "Bearer <token>" }
 ```
@@ -743,6 +818,14 @@ try {
     } else if (status === 404) {
       // Not found
       showError("Resource not found");
+    } else if (status === 403) {
+      // Forbidden - Ownership check failed
+      showError("You do not have permission to perform this action.");
+    } else if (status === 500 && data.message.includes("existing bookings")) {
+      // Safe Delete Prevention
+      showError(
+        "Cannot delete hotel because it has active bookings. Please cancel them first."
+      );
     }
   } else {
     // Network error
