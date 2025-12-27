@@ -36,8 +36,7 @@ org:
     background-job-server:
       enabled: true
     dashboard:
-      enabled: true
-      port: 8000 # Internal - Proxied by Nginx
+      enabled: false
     jobs:
       default-number-of-retries: 3
     database:
