@@ -20,4 +20,10 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                         @Param("checkOutDate") LocalDate checkOutDate);
 
         boolean existsByRoomHotelId(Long hotelId);
+
+        // Stats for Seller
+        long countByRoomHotelSellerId(Long sellerId);
+
+        @Query("SELECT SUM(b.totalPrice) FROM Booking b WHERE b.room.hotel.seller.id = :sellerId AND b.status <> 'CANCELLED'")
+        java.math.BigDecimal sumRevenueBySellerId(@Param("sellerId") Long sellerId);
 }

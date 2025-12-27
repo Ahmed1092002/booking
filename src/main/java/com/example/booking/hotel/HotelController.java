@@ -186,4 +186,16 @@ public class HotelController {
                                 .toList();
                 return ResponseEntity.ok(dtos);
         }
+
+        @GetMapping("/seller/stats")
+        @PreAuthorize("hasRole('SELLER')")
+        @SecurityRequirement(name = "bearerAuth")
+        @Operation(summary = "Get seller statistics", description = "Retrieve aggregated statistics for the seller dashboard")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Stats retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.example.booking.hotel.dto.SellerStatsResponseDto.class)))
+        })
+        public ResponseEntity<com.example.booking.hotel.dto.SellerStatsResponseDto> getSellerStats() {
+                User seller = currentUserService.getCurrentUser();
+                return ResponseEntity.ok(hotelService.getSellerStats(seller.getId()));
+        }
 }

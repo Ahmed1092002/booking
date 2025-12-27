@@ -102,4 +102,37 @@ public class HotelService {
     public List<Hotel> getHotelsBySeller(Long sellerId) {
         return hotelRepository.findBySellerId(sellerId);
     }
+
+    public com.example.booking.hotel.dto.SellerStatsResponseDto getSellerStats(Long sellerId) {
+        List<Hotel> sellerHotels = hotelRepository.findBySellerId(sellerId);
+
+        int totalHotels = sellerHotels.size();
+        int totalReviews = sellerHotels.stream().mapToInt(Hotel::getTotalReviews).sum();
+
+        java.math.BigDecimal averageRating = java.math.BigDecimal.ZERO;
+        if (totalHotels > 0) {
+            double avg = sellerHotels.stream()
+                    .map(Hotel::getAverageRating)
+                    .filter(java.util.Objects::nonNull)
+                    .mapToDouble(java.math.BigDecimal::doubleValue)
+                    .average()
+                    .orElse(0.0);
+            averageRating = java.math.BigDecimal.valueOf(avg);
+        }
+
+        long totalBookings = bookingRepository.countByRoomHotelSellerId(sellerId);
+        java.math.BigDecimal totalRevenue = bookingRepository.sumRevenueBySellerId(sellerId);
+
+        if (totalRevenue == null) {
+            totalRevenue = java.math.BigDecimal.ZERO;
+        }
+
+        return com.example.booking.hotel.dto.SellerStatsResponseDto.builder()
+                .totalHotels(totalHotels)
+                .totalBookings((int) totalBookings)
+                .totalRevenue(totalRevenue)
+                .averageRating(averageRating)
+                .totalReviews(totalReviews)
+                .build();
+    }
 }

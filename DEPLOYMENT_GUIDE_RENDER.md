@@ -1,85 +1,69 @@
 # Deploying to Render 🚀
 
-This guide explains how to deploy your Hotel Booking System to [Render](https://render.com) using the configurations we've created.
+This guide explains how to deploy your Hotel Booking System to [Render](https://render.com).
 
-## 📋 Prerequisites
-
-1. **GitHub Account**: Your project code **must** be pushed to a GitHub repository.
-2. **Render Account**: Create a free account at https://dashboard.render.com.
-3. **Cloudinary Account**: You need your Cloud API keys handy.
+> [!TIP] > **Free Tier Architecture**
+> We are using a "Sidecar" approach where **Redis runs inside the Java Container**.
+> This allows you to deploy just **1 Web Service** + **1 Database** for a 100% Free setup.
 
 ---
 
-## 🚀 Deployment Steps (Using Blueprint)
+## Option 1: The "Blueprint" Way (Recommended & Easiest)
 
-The easiest way to deploy is using the `render.yaml` "Blueprint" file I created. This automatically sets up:
+This automatically creates the Database and Web Service for you.
 
-- The Web Service (Spring Boot App)
-- PostgreSQL Database
-- Redis Cache
-
-### Step 1: Push Code to GitHub
-
-Ensure your latest changes (including `Dockerfile` and `render.yaml`) are pushed to your GitHub repository.
-
-### Step 2: Create Blueprint on Render
-
-1. Go to your [Render Dashboard](https://dashboard.render.com).
-2. Click **New +** button → select **Blueprint**.
-3. Connect your GitHub repository.
-4. Render will detect the `render.yaml` file.
-5. You will be prompted to enter values for **Service Name** and environment variables.
-
-### Step 3: Configure Environment Variables
-
-The `render.yaml` will automatically link the database and Redis for you! However, you must manually provide the **Cloudinary** keys when prompted (or in the dashboard):
-
-| Variable                | Value             |
-| ----------------------- | ----------------- |
-| `CLOUDINARY_CLOUD_NAME` | (Your Cloud Name) |
-| `CLOUDINARY_API_KEY`    | (Your API Key)    |
-| `CLOUDINARY_API_SECRET` | (Your API Secret) |
-
-> **Note**: Variables like `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, and `REDIS_URL` are **automatically injected** by the Blueprint. You don't need to set them manually!
+1.  **Push Code**: Ensure `git push` is done.
+2.  **New Blueprint**: Go to Dashboard -> New + -> Blueprint -> Select Repo.
+3.  **Apply**: Render detects `render.yaml` and sets everything up.
+4.  **Done!**
 
 ---
 
-## 🐳 Manual Deployment (Alternative)
+## Option 2: The "Manual" Way (If you prefer control)
 
-If you prefer to set up services manually without a Blueprint:
+If you want to create the services yourself, follow these steps exactly:
 
-1. **Create PostgreSQL Database**:
+### Step 1: Create the Database
 
-   - New + → PostgreSQL
-   - Name: `booking-db`
-   - Copy the `Internal Connection URL`.
+1.  Click **New +** -> **PostgreSQL**.
+2.  **Name**: `booking-db`
+3.  **Plan**: Free.
+4.  **Create**.
+5.  Wait for creation, then copy the **"Internal Database URL"**.
 
-2. **Create Redis**:
+### Step 2: Create the Web Service
 
-   - New + → Redis
-   - Name: `booking-redis`
-   - Copy the `Internal Connection URL` (e.g., `redis://...`).
+1.  Click **New +** -> **Web Service**.
+2.  **Source**: "Build and deploy from a Git repository".
+3.  **Connect**: Select your `booking` repository.
+4.  **Name**: `booking-api`
+5.  **Runtime**: **Docker** (Very Important!)
+6.  **Plan**: Free.
+7.  **Environment Variables**:
+    You MUST add these variables manually.
 
-3. **Create Web Service**:
-   - New + → Web Service
-   - **Environment**: Docker
-   - **Environment Variables**:
-     - `SPRING_DATASOURCE_URL`: (Paste Postgres Internal URL)
-     - `DB_USERNAME`: (Postgres User)
-     - `DB_PASSWORD`: (Postgres/Render Password)
-     - `REDIS_URL`: (Paste Redis Internal URL)
-     - `CLOUDINARY_...`: (Your Cloudinary keys)
+    | Key                      | Value                                 |
+    | ------------------------ | ------------------------------------- |
+    | `SPRING_PROFILES_ACTIVE` | `prod`                                |
+    | `SPRING_DATASOURCE_URL`  | _(Paste Internal DB URL from Step 1)_ |
+    | `DB_USERNAME`            | _(Copy "Username" from DB info)_      |
+    | `DB_PASSWORD`            | _(Copy "Password" from DB info)_      |
+    | `CLOUDINARY_CLOUD_NAME`  | _(Your Cloudinary Name)_              |
+    | `CLOUDINARY_API_KEY`     | _(Your Cloudinary Key)_               |
+    | `CLOUDINARY_API_SECRET`  | _(Your Cloudinary Secret)_            |
+
+### Step 3: Deploy
+
+1.  Click **Create Web Service**.
+2.  Render will start the Docker build.
+3.  It will install Redis + Java and start them both.
+4.  You will see logs: `Starting Redis...` then `Starting Spring Boot App...`.
 
 ---
 
-## 🔍 Verification
+## ⚠️ Troubleshooting
 
-Once deployed, Render will provide a public URL (e.g., `https://booking-api.onrender.com`).
-
-1. **Check Health**: POST to `/api/auth/login` needed? Or check Swagger: `https://<your-app>.onrender.com/swagger-ui.html`
-2. **View Logs**: Check "Logs" tab in Render dashboard to ensure the app started and connected to DB/Redis.
-
-## ⚠️ Free Tier Limitations
-
-- **Spin Down**: Free web services spin down after 15 minutes of inactivity. The first request may take 50+ seconds.
-- **Database**: Free Postgres expires after 90 days (use backups!).
+- **"Unable to connect to Redis"**:
+  - Ensure your `Dockerfile` includes the Redis installation steps.
+  - Ensure your `start.sh` is starting `redis-server`.
+  - This project is configured to look for Redis at `localhost:6379`, which works because of the Sidecar setup.
