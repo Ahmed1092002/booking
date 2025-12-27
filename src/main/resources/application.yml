@@ -36,9 +36,8 @@ org:
     background-job-server:
       enabled: true
     dashboard:
-      enabled: false
-      # Disabled due to conflict with Swagger UI on the same port.
-      # Enable locally with 'port: 8000' if needed.
+      enabled: true
+      port: 8000 # Internal - Proxied by Nginx
     jobs:
       default-number-of-retries: 3
     database:
