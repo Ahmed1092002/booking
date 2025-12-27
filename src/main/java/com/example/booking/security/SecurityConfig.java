@@ -60,9 +60,6 @@ public class SecurityConfig {
                         // API Documentation
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
-                        // Promotions Endpoints (Admin Only) - Handled in Controller for Debugging
-                        // .requestMatchers("/api/promotions/**").hasRole("ADMIN")
-
                         // All other requests require authentication
                         .anyRequest().authenticated())
                 // H2 Console uses frames

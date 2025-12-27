@@ -34,14 +34,12 @@ public class CloudinaryService {
                     ObjectUtils.asMap(
                             "folder", folder + "/" + subfolder,
                             "public_id", publicId,
-                            "resource_type", "image",
-                            "transformation", ObjectUtils.asMap(
-                                    "quality", "auto",
-                                    "fetch_format", "auto")));
+                            "resource_type", "image"));
 
             return uploadResult;
-        } catch (IOException e) {
-            throw new BadRequestException("Failed to upload image: " + e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace(); // Log for debug
+            throw new RuntimeException("Cloudinary upload failed: " + e.getMessage());
         }
     }
 
