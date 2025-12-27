@@ -14,11 +14,14 @@ public class HotelService {
     private final HotelRepository hotelRepository;
     private final RoomRepository roomRepository;
     private final UserRepository userRepository;
+    private final com.example.booking.booking.BookingRepository bookingRepository;
 
-    public HotelService(HotelRepository hotelRepository, RoomRepository roomRepository, UserRepository userRepository) {
+    public HotelService(HotelRepository hotelRepository, RoomRepository roomRepository, UserRepository userRepository,
+            com.example.booking.booking.BookingRepository bookingRepository) {
         this.hotelRepository = hotelRepository;
         this.roomRepository = roomRepository;
         this.userRepository = userRepository;
+        this.bookingRepository = bookingRepository;
     }
 
     @Transactional
@@ -56,5 +59,47 @@ public class HotelService {
     public Hotel getHotelById(Long id) {
         return hotelRepository.findById(id).orElseThrow(
                 () -> new com.example.booking.exception.ResourceNotFoundException("Hotel not found with id: " + id));
+    }
+
+    @Transactional
+    public Hotel updateHotel(Long sellerId, Long hotelId, Hotel updatedHotel) {
+        Hotel existingHotel = getHotelById(hotelId);
+
+        if (!existingHotel.getSeller().getId().equals(sellerId)) {
+            throw new RuntimeException("Unauthorized: You do not own this hotel");
+        }
+
+        if (updatedHotel.getName() != null)
+            existingHotel.setName(updatedHotel.getName());
+        if (updatedHotel.getCity() != null)
+            existingHotel.setCity(updatedHotel.getCity());
+        if (updatedHotel.getAddress() != null)
+            existingHotel.setAddress(updatedHotel.getAddress());
+        if (updatedHotel.getGoogleMapUrl() != null)
+            existingHotel.setGoogleMapUrl(updatedHotel.getGoogleMapUrl());
+        if (updatedHotel.getAmenities() != null)
+            existingHotel.setAmenities(updatedHotel.getAmenities());
+
+        return hotelRepository.save(existingHotel);
+    }
+
+    @Transactional
+    public void deleteHotel(Long sellerId, Long hotelId) {
+        Hotel existingHotel = getHotelById(hotelId);
+
+        if (!existingHotel.getSeller().getId().equals(sellerId)) {
+            throw new RuntimeException("Unauthorized: You do not own this hotel");
+        }
+
+        boolean hasBookings = bookingRepository.existsByRoomHotelId(hotelId);
+        if (hasBookings) {
+            throw new RuntimeException("Cannot delete hotel: there are existing bookings associated with it.");
+        }
+
+        hotelRepository.delete(existingHotel);
+    }
+
+    public List<Hotel> getHotelsBySeller(Long sellerId) {
+        return hotelRepository.findBySellerId(sellerId);
     }
 }
