@@ -33,8 +33,9 @@ org:
     background-job-server:
       enabled: true
     dashboard:
-      enabled: true
-      # Port removed to run inside main Tomcat server on port 8080
+      enabled: false
+      # Disabled due to conflict with Swagger UI on the same port.
+      # Enable locally with 'port: 8000' if needed.
     jobs:
       default-number-of-retries: 3
     database:
