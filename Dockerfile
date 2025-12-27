@@ -9,11 +9,12 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:17-jdk-jammy
 WORKDIR /app
 
-# Install Redis
-RUN apt-get update && apt-get install -y redis-server && rm -rf /var/lib/apt/lists/*
+# Install Redis AND Nginx
+RUN apt-get update && apt-get install -y redis-server nginx && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /app/target/*.jar app.jar
 COPY start.sh .
+COPY nginx.conf /etc/nginx/nginx.conf
 
 # Make script executable
 RUN chmod +x start.sh

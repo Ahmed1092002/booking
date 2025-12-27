@@ -1,3 +1,6 @@
+server:
+  port: 8081 # Internal port (Nginx will proxy to this)
+
 spring:
   application:
     name: booking-service
