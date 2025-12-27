@@ -61,6 +61,10 @@ public class HotelService {
                 () -> new com.example.booking.exception.ResourceNotFoundException("Hotel not found with id: " + id));
     }
 
+    public List<Room> getRoomsByHotelId(Long hotelId) {
+        return roomRepository.findByHotelId(hotelId);
+    }
+
     @Transactional
     public Hotel updateHotel(Long sellerId, Long hotelId, Hotel updatedHotel) {
         Hotel existingHotel = getHotelById(hotelId);

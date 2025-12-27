@@ -131,6 +131,20 @@ public class HotelController {
                 return ResponseEntity.ok(hotelMapper.toResponseDto(hotel));
         }
 
+        @GetMapping("/{hotelId}/rooms")
+        @Operation(summary = "Get hotel rooms", description = "Retrieve all rooms for a specific hotel")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Rooms retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RoomResponseDto.class))),
+                        @ApiResponse(responseCode = "404", description = "Hotel not found")
+        })
+        public ResponseEntity<List<RoomResponseDto>> getHotelRooms(@PathVariable Long hotelId) {
+                List<Room> rooms = hotelService.getRoomsByHotelId(hotelId);
+                List<RoomResponseDto> dtos = rooms.stream()
+                                .map(hotelMapper::toResponseDto)
+                                .toList();
+                return ResponseEntity.ok(dtos);
+        }
+
         @PutMapping("/{id}")
         @PreAuthorize("hasRole('SELLER')")
         @SecurityRequirement(name = "bearerAuth")
